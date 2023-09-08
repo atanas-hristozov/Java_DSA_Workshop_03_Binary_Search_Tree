@@ -10,17 +10,10 @@ public class BinarySearchTreeImpl<E extends Comparable<E>> implements BinarySear
     private BinarySearchTreeImpl<E> left;
     private BinarySearchTreeImpl<E> right;
 
-
     public BinarySearchTreeImpl(E value) {
         this.value = value;
         left = null;
         right = null;
-    }
-
-    public BinarySearchTreeImpl(E value, BinarySearchTreeImpl<E> left, BinarySearchTreeImpl<E> right) {
-        this.value = value;
-        this.left = left;
-        this.right = right;
     }
 
     @Override
@@ -40,30 +33,30 @@ public class BinarySearchTreeImpl<E extends Comparable<E>> implements BinarySear
 
     @Override
     public void insert(E value) {
-        if(value.compareTo(this.value) < 0 && left!=null){
-            left.insert(value);
-        }
-        if(value.compareTo(this.value) < 0 && left==null){
-            left = new BinarySearchTreeImpl<>(value);
-        }
-
-        if(value.compareTo(this.value) > 0 && right!=null){
-            right.insert(value);
-        }
-        if(value.compareTo(this.value) > 0 && right==null){
-            right = new BinarySearchTreeImpl<>(value);
+        if (value.compareTo(this.value) < 0) {
+            if (left == null) {
+                left = new BinarySearchTreeImpl<>(value);
+            } else {
+                left.insert(value);
+            }
+        } else if (value.compareTo(this.value) > 0) {
+            if (right == null) {
+                right = new BinarySearchTreeImpl<>(value);
+            } else {
+                right.insert(value);
+            }
         }
     }
 
     @Override
     public boolean search(E value) {
-        if(value.compareTo(this.value) == 0){
+        if (value.compareTo(this.value) == 0){
             return true;
         }
-        if(value.compareTo(this.value) < 0 && left!=null){
+        if(value.compareTo(this.value) < 0 && left != null){
             return left.search(value);
         }
-        if(value.compareTo(this.value) > 0 && right!=null){
+        if (value.compareTo(this.value) > 0 && right != null){
             return right.search(value);
         }
         return false;
@@ -72,7 +65,6 @@ public class BinarySearchTreeImpl<E extends Comparable<E>> implements BinarySear
     @Override
     public List<E> inOrder() {
         List<E> result = new ArrayList<>();
-
         if (left != null) {
             result.addAll(left.inOrder());
         }
@@ -80,37 +72,32 @@ public class BinarySearchTreeImpl<E extends Comparable<E>> implements BinarySear
         if (right != null) {
             result.addAll(right.inOrder());
         }
-
         return result;
     }
 
     @Override
     public List<E> postOrder() {
         List<E> result = new ArrayList<>();
-
-        if(left!=null) {
+        if (left != null) {
             result.addAll(left.postOrder());
         }
-        if(right!=null) {
+        if (right != null) {
             result.addAll(right.postOrder());
         }
         result.add(value);
-
         return result;
     }
 
     @Override
     public List<E> preOrder() {
         List<E> result = new ArrayList<>();
-
         result.add(value);
-        if(left!=null) {
+        if (left != null) {
             result.addAll(left.preOrder());
         }
-        if(right!=null) {
+        if (right != null) {
             result.addAll(right.preOrder());
         }
-
         return result;
     }
 
@@ -119,13 +106,15 @@ public class BinarySearchTreeImpl<E extends Comparable<E>> implements BinarySear
         List<E> result = new ArrayList<>();
         Queue<BinarySearchTreeImpl<E>> queue = new LinkedList<>();
         queue.offer(this);
-        while(!queue.isEmpty()){
-            BinarySearchTreeImpl<E> current = queue.poll();
-            result.add(current.value);
-            if(current.left!=null)
-                queue.add(current.left);
-            if(current.right!=null)
-                queue.add(current.right);
+        while (!queue.isEmpty()) {
+            BinarySearchTreeImpl<E> currentNode = queue.poll();
+            result.add(currentNode.value);
+            if (currentNode.left != null){
+                queue.offer(currentNode.left);
+            }
+            if (currentNode.right != null){
+                queue.offer(currentNode.right);
+            }
         }
         return result;
     }
@@ -146,18 +135,65 @@ public class BinarySearchTreeImpl<E extends Comparable<E>> implements BinarySear
         return Math.max(left, right) +1;
     }
 
-//     Advanced task: implement remove method. To test, uncomment the commented tests in BinaryTreeImplTests
-//    @Override
-//    public boolean remove(E value) {
-//        if(value.compareTo(this.value) == 0){
-//            return true;
-//        }
-//        if(value.compareTo(this.value) < 0 && left!=null){
-//            return left.search(value);
-//        }
-//        if(value.compareTo(this.value) > 0 && right!=null){
-//            return right.search(value);
-//        }
-//        return false;
-//    }
+    // Advanced task: implement remove method. To test, uncomment the commented tests in BinaryTreeImplTests
+    @Override
+    public boolean remove(E value) {
+        BinarySearchTreeImpl<E> parent = null;
+        BinarySearchTreeImpl<E> current = this;
+
+        while (current != null && !current.value.equals(value)) {
+            parent = current;
+            if (value.compareTo(current.value) < 0) {
+                current = current.left;
+            } else {
+                current = current.right;
+            }
+        }
+
+        if (current == null) {
+            return false;
+        }
+
+        if (current.left == null && current.right == null) {
+            if (parent == null) {
+                return false;
+            } else if (parent.left == current) {
+                parent.left = null;
+            } else {
+                parent.right = null;
+            }
+        }
+
+        else if (current.left == null || current.right == null) {
+            BinarySearchTreeImpl<E> child = (current.left != null) ? current.left : current.right;
+            if (parent == null) {
+                this.value = child.value;
+                this.left = child.left;
+                this.right = child.right;
+            } else if (parent.left == current) {
+                parent.left = child;
+            } else {
+                parent.right = child;
+            }
+        }
+
+        else {
+            BinarySearchTreeImpl<E> successorParent = current;
+            BinarySearchTreeImpl<E> successor = current.right;
+            while (successor.left != null) {
+                successorParent = successor;
+                successor = successor.left;
+            }
+
+            current.value = successor.value;
+
+            if (successorParent == current) {
+                successorParent.right = successor.right;
+            } else {
+                successorParent.left = successor.right;
+            }
+        }
+
+        return true;
+    }
 }
